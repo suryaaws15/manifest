@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-backend-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springboot-backend
+  template:
+    metadata:
+      labels:
+        app: springboot-backend
+    spec:
+      containers:
+      - name: springboot-backend
+        image: surya0610/backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+          - name: DB_USERNAME
+            valueFrom:
+               secretKeyRef :
+                 name : mysql-secret
+                 key : username
+
+          - name: DB_PASSWORD
+            valueFrom:
+               secretKeyRef :
+                 name : mysql-secret
+                 key : password
+
+          - name: DB_NAME
+            valueFrom:
+               configMapKeyRef :
+                 name : my-cm
+                 key : database
+
+          - name: DB_HOST
+            valueFrom:
+               configMapKeyRef :
+                 name : my-cm
+                 key : host
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-backend-svc
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: springboot-backend
+  type: NodePort
+
